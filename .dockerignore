@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+.git
+.env
+.worktrees
+.gitignore
+README.md
