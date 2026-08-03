@@ -25,7 +25,7 @@ export function JoinRoom() {
         />
         Join as spectator
       </label>
-      <button disabled={name.trim().length === 0} onClick={handleJoin}>
+      <button disabled={name.trim().length === 0 || roomCode.trim().length === 0} onClick={handleJoin}>
         Join
       </button>
     </div>
