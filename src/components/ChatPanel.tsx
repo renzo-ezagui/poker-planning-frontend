@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Socket } from 'socket.io-client';
 
-export function ChatPanel({ socket, name }: { socket: Socket | null; name: string }) {
+export function ChatPanel({ socket, name, roomCode }: { socket: Socket | null; name: string; roomCode: string }) {
   const [messages, setMessages] = useState<{ name: string; text: string; ts: number }[]>([]);
   const [draft, setDraft] = useState('');
 
@@ -14,7 +14,7 @@ export function ChatPanel({ socket, name }: { socket: Socket | null; name: strin
 
   function send() {
     if (!socket || draft.trim().length === 0) return;
-    socket.emit('chat:message', { name, text: draft, roomCode: '' });
+    socket.emit('chat:message', { name, text: draft, roomCode });
     setDraft('');
   }
 

@@ -7,13 +7,14 @@ describe('ChatPanel', () => {
     const emit = vi.fn();
     const socket = { on: vi.fn(), off: vi.fn(), emit } as any;
 
-    render(<ChatPanel socket={socket} name="Alice" />);
+    render(<ChatPanel socket={socket} name="Alice" roomCode="room-123" />);
     fireEvent.change(screen.getByLabelText(/chat message/i), { target: { value: 'hi team' } });
     fireEvent.click(screen.getByRole('button', { name: /send/i }));
 
     expect(emit).toHaveBeenCalledWith('chat:message', expect.objectContaining({
       name: 'Alice',
       text: 'hi team',
+      roomCode: 'room-123',
     }));
   });
 });

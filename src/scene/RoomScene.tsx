@@ -25,7 +25,7 @@ export function RoomScene() {
         <Seat position={[0, 0.5, 3]} name={name} hasVoted={false} revealed={false} value="" />
         <OrbitControls />
       </Canvas>
-      <ChatPanel socket={socket} name={name} />
+      <ChatPanel socket={socket} name={name} roomCode={code ?? ''} />
       <StatsPanel socket={socket} />
       {role === 'voter' && connected && <AdminControls socket={socket} roomCode={code ?? ''} />}
     </div>
