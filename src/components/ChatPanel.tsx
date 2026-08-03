@@ -5,11 +5,12 @@ export function ChatPanel({ socket, name, roomCode }: { socket: Socket | null; n
   const [messages, setMessages] = useState<{ name: string; text: string; ts: number }[]>([]);
   const [draft, setDraft] = useState('');
 
-  useEffect(() => {
-    if (!socket) return;
-    const handler = (msg: any) => setMessages((prev) => [...prev, msg]);
-    socket.on('chat:message', handler);
-    return () => socket.off('chat:message', handler);
+  useEffect((): void | (() => void) => {
+    if (socket) {
+      const handler = (msg: any) => setMessages((prev) => [...prev, msg]);
+      socket.on('chat:message', handler);
+      return () => socket.off('chat:message', handler);
+    }
   }, [socket]);
 
   function send() {

@@ -7,7 +7,7 @@ vi.mock('socket.io-client', () => {
   return {
     io: vi.fn(() => ({
       on: (event: string, cb: any) => { handlers[event] = cb; },
-      emit: (event: string, payload: any) => {
+      emit: (event: string, _payload: any) => {
         if (event === 'join') {
           handlers['joined']({ participantId: 'p1', token: 'tok-1', role: 'voter', roomState: {} });
         }

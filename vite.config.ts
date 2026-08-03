@@ -9,4 +9,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/vitest.setup.ts'],
   },
-})
+} as any)
