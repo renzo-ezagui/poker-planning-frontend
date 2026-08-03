@@ -14,7 +14,7 @@ export function RoomScene() {
   const name = params.get('name') ?? '';
   // participantId is part of the hook's contract (Task 12) but not needed by
   // this scene yet; own-seat highlighting will consume it in a later task.
-  const { role, socket, connected } = useRoomSocket(code ?? '', name);
+  const { socket, connected } = useRoomSocket(code ?? '', name);
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -27,7 +27,9 @@ export function RoomScene() {
       </Canvas>
       <ChatPanel socket={socket} name={name} roomCode={code ?? ''} />
       <StatsPanel socket={socket} />
-      {role === 'voter' && connected && <AdminControls socket={socket} roomCode={code ?? ''} />}
+      {document.cookie.includes('admin_jwt=') && connected && (
+        <AdminControls socket={socket} roomCode={code ?? ''} />
+      )}
     </div>
   );
 }
