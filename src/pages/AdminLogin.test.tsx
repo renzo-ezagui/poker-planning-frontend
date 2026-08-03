@@ -3,8 +3,11 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AdminLogin } from './AdminLogin';
 
+const mockFetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+
 beforeEach(() => {
-  global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+  globalThis.fetch = mockFetch as unknown as typeof fetch;
+  mockFetch.mockClear();
 });
 
 describe('AdminLogin', () => {
@@ -20,7 +23,7 @@ describe('AdminLogin', () => {
     fireEvent.click(screen.getByRole('button', { name: /log in/i }));
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/auth/login'),
         expect.objectContaining({ method: 'POST', credentials: 'include' }),
       );

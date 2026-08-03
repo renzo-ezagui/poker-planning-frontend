@@ -4,11 +4,12 @@ import type { Socket } from 'socket.io-client';
 export function StatsPanel({ socket }: { socket: Socket | null }) {
   const [stats, setStats] = useState<{ avg: number; median: number; variance: number } | null>(null);
 
-  useEffect(() => {
-    if (!socket) return;
-    const handler = (payload: any) => setStats(payload.stats ?? null);
-    socket.on('round:reveal', handler);
-    return () => socket.off('round:reveal', handler);
+  useEffect((): void | (() => void) => {
+    if (socket) {
+      const handler = (payload: any) => setStats(payload.stats ?? null);
+      socket.on('round:reveal', handler);
+      return () => socket.off('round:reveal', handler);
+    }
   }, [socket]);
 
   if (!stats) return null;
