@@ -1314,7 +1314,7 @@ a.btn-primary {
   inset: 0;
   z-index: 20;
   pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px);
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px);
   mix-blend-mode: multiply;
 }
 
@@ -1387,6 +1387,7 @@ a.btn-primary {
 [data-theme='dungeon'] .hand-card {
   border-radius: 0;
   border: 3px solid #1b1326;
+  color: #0e0916;
   font-size: 17px;
   font-weight: 400;
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);

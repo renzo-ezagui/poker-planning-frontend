@@ -20,7 +20,10 @@ const GLYPHS: Record<string, string[]> = {
 export const GLYPH_W = 5;
 export const GLYPH_H = 7;
 
-/** Draws `text` with 1px gaps between glyphs; returns the width used (in grid cells). */
+/**
+ * Draws `text` on a grid of `cell`-sized squares. `bold` doubles every stroke
+ * horizontally, which keeps numerals legible after heavy downsampling.
+ */
 export function drawPixelText(
   g: CanvasRenderingContext2D,
   text: string,
@@ -28,21 +31,23 @@ export function drawPixelText(
   y: number,
   cell: number,
   color: string,
+  bold = false,
 ): number {
   g.fillStyle = color;
   let cx = x;
+  const advance = (GLYPH_W + (bold ? 2 : 1)) * cell;
   for (const ch of text) {
     const rows = GLYPHS[ch] ?? GLYPHS['?'];
     rows.forEach((row, ry) => {
       for (let rx = 0; rx < row.length; rx++) {
-        if (row[rx] === '1') g.fillRect(cx + rx * cell, y + ry * cell, cell, cell);
+        if (row[rx] === '1') g.fillRect(cx + rx * cell, y + ry * cell, cell * (bold ? 2 : 1), cell);
       }
     });
-    cx += (GLYPH_W + 1) * cell;
+    cx += advance;
   }
-  return (text.length * (GLYPH_W + 1) - 1) * cell;
+  return pixelTextWidth(text, cell, bold);
 }
 
-export function pixelTextWidth(text: string, cell: number) {
-  return (text.length * (GLYPH_W + 1) - 1) * cell;
+export function pixelTextWidth(text: string, cell: number, bold = false) {
+  return (text.length * (GLYPH_W + (bold ? 2 : 1)) - 1) * cell;
 }
