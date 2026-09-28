@@ -8,12 +8,23 @@ import { ChatDrawer } from '../components/ChatDrawer';
 import { Results } from '../components/Results';
 import { Timer } from '../components/Timer';
 import { InviteModal } from '../components/InviteModal';
-import { ChatIcon, PeopleIcon, SoundOffIcon, SoundOnIcon } from '../components/Icons';
+import { ChatIcon, PeopleIcon, SlidersIcon, SoundOffIcon, SoundOnIcon } from '../components/Icons';
 import { JoinForm } from '../components/JoinForm';
 import { playChip, playFlip, setSoundEnabled, soundEnabled } from '../lib/sound';
 import { api, type PublicRoom } from '../lib/api';
 import { ThemeContext, themeFor } from '../themes';
 import { setSoundStyle } from '../lib/sound';
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+}
 
 function downloadCsv(code: string, csv: string) {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -80,6 +91,8 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
   useEffect(() => setSoundStyle(theme.sound), [theme.sound]);
   const [chatOpen, setChatOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [hostOpen, setHostOpen] = useState(() => window.innerWidth > 900);
+  const compact = useMediaQuery('(max-width: 640px)');
   const [sound, setSound] = useState(soundEnabled());
   const [unread, setUnread] = useState(0);
   const seenMessages = useRef(0);
@@ -175,6 +188,17 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
           >
             {sound ? <SoundOnIcon /> : <SoundOffIcon />}
           </button>
+          {state.isHost && state.status === 'joined' && (
+            <button
+              className="btn btn-icon panel"
+              onClick={() => setHostOpen((o) => !o)}
+              aria-label={hostOpen ? 'Hide host controls' : 'Show host controls'}
+              aria-expanded={hostOpen}
+              title="Host controls"
+            >
+              <SlidersIcon />
+            </button>
+          )}
           <button
             className="btn btn-icon panel"
             style={{ position: 'relative' }}
@@ -194,6 +218,9 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
             <div className="eyebrow">{state.revealed ? theme.copy.revealed : theme.copy.nowEstimating}</div>
             <h1>{state.topic || 'Untitled story'}</h1>
             {handHint && <div className="topic-hint">{handHint}</div>}
+            {compact && state.revealed && (
+              <Results votes={state.votes} stats={state.stats} deckType={state.deckType} inline />
+            )}
           </>
         ) : (
           state.status === 'joined' && (
@@ -205,14 +232,15 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
         )}
       </div>
 
-      {state.revealed && <Results votes={state.votes} stats={state.stats} deckType={state.deckType} />}
+      {!compact && state.revealed && <Results votes={state.votes} stats={state.stats} deckType={state.deckType} />}
 
       {state.role === 'voter' && state.status === 'joined' && state.roundActive && !state.revealed && (
         <Hand deckType={state.deckType} selected={state.myVote} disabled={false} hint={null} onPick={actions.vote} />
       )}
 
-      {state.isHost && state.status === 'joined' && (
+      {state.isHost && state.status === 'joined' && hostOpen && (
         <HostDock
+          onClose={() => setHostOpen(false)}
           code={code}
           roundActive={state.roundActive}
           revealed={state.revealed}

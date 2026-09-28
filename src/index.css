@@ -833,22 +833,12 @@ a.btn-primary {
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
-.dock-toggle {
-  position: absolute;
-  left: 18px;
-  bottom: 18px;
-  z-index: 9;
-}
 @media (max-width: 900px) {
   .dock {
     left: 10px;
     right: 10px;
     bottom: 10px;
     width: auto;
-  }
-  .dock-toggle {
-    left: 10px;
-    bottom: 124px;
   }
 }
 
@@ -1555,4 +1545,42 @@ a.btn-primary {
   [data-theme='dungeon'] .hand-cards:has(.hand-card:nth-child(9)) .hand-card[data-len='3'] {
     font-size: 8px;
   }
+}
+
+/* phones: results sit in the topic block, compact, instead of over the table */
+.results.results-inline {
+  position: static;
+  transform: none;
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 10px 14px;
+  gap: 12px;
+  max-width: 100%;
+  animation-name: fade-in;
+  pointer-events: auto;
+}
+.results-inline .results-main {
+  padding-right: 12px;
+}
+.results-inline .results-main .value {
+  font-size: 28px;
+}
+.results-inline .results-sub {
+  gap: 10px;
+  font-size: 11px;
+}
+.results-inline .dist {
+  min-height: 52px;
+}
+.results-inline .dist-bar i {
+  width: 16px;
+}
+.consensus {
+  white-space: nowrap;
+}
+[data-theme='dungeon'] .results-inline .results-main .value {
+  font-size: 20px;
+}
+[data-theme='dungeon'] .results-inline .consensus {
+  font-size: 9px;
 }

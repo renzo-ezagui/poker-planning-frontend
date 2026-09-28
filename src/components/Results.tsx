@@ -6,11 +6,21 @@ function fmt(n: number) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-export function Results({ votes, stats, deckType }: { votes: Vote[]; stats: Stats | null; deckType: string }) {
+export function Results({
+  votes,
+  stats,
+  deckType,
+  inline = false,
+}: {
+  votes: Vote[];
+  stats: Stats | null;
+  deckType: string;
+  inline?: boolean;
+}) {
   const theme = useTheme();
   if (votes.length === 0) {
     return (
-      <div className="results panel">
+      <div className={`results panel${inline ? ' results-inline' : ''}`}>
         <div className="results-main">
           <div className="eyebrow">Result</div>
           <div className="value">–</div>
@@ -29,7 +39,7 @@ export function Results({ votes, stats, deckType }: { votes: Vote[]; stats: Stat
   const consensus = counts.size === 1;
 
   return (
-    <div className="results panel" aria-live="polite">
+    <div className={`results panel${inline ? ' results-inline' : ''}`} aria-live="polite">
       <div className="results-main">
         <div className="eyebrow">{stats ? theme.copy.average : theme.copy.mostVoted}</div>
         <div className="value">{stats ? fmt(stats.avg) : top.join(' / ')}</div>
