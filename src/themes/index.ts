@@ -73,7 +73,7 @@ export const THEMES: Record<ThemeId, Theme> = {
     id: 'dungeon',
     name: '8-bit dungeon',
     tagline: 'Pixels, torches and loot',
-    pixelScale: 0.34,
+    pixelScale: 0.45,
     sound: 'chiptune',
     scene: {
       felt: '#553781',

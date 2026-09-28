@@ -144,8 +144,10 @@ export async function whenFontsReady(): Promise<void> {
 
 // ─── 8-bit dungeon: tiny canvases, nearest-neighbour filtering ──────────────
 
-const PW = 32;
-const PH = 46;
+// big enough for 3px glyph cells on two-digit values, so numerals survive the
+// low-res render and read clearly across the table
+const PW = 48;
+const PH = 68;
 
 function pixelTexture(c: HTMLCanvasElement) {
   const t = new THREE.CanvasTexture(c);
@@ -208,18 +210,14 @@ function dungeonFace(value: string): THREE.Texture {
   const cached = dungeonFaces.get(value);
   if (cached) return cached;
   const [c, g] = pixelCanvas();
-  g.fillStyle = '#c9b48a';
+  g.fillStyle = '#1b1326';
   g.fillRect(0, 0, PW, PH);
-  g.fillStyle = '#f3e9d2';
-  g.fillRect(1, 1, PW - 2, PH - 2);
-  g.fillStyle = '#e4d6b4';
-  g.fillRect(1, PH - 3, PW - 2, 2);
-  const cell = pixelTextWidth(value, 2) <= PW - 6 ? 2 : 1;
-  const w = pixelTextWidth(value, cell);
-  drawPixelText(g, value, Math.floor((PW - w) / 2), Math.floor((PH - GLYPH_H * cell) / 2), cell, '#1b1326');
-  if (value.length <= 2) {
-    drawPixelText(g, value, 3, 3, 1, '#8a2f3c');
-  }
+  g.fillStyle = '#fbf4e2';
+  g.fillRect(2, 2, PW - 4, PH - 4);
+  const fits = (c: number) => pixelTextWidth(value, c, true) <= PW - 8;
+  const cell = fits(4) ? 4 : fits(3) ? 3 : 2;
+  const w = pixelTextWidth(value, cell, true);
+  drawPixelText(g, value, Math.floor((PW - w) / 2), Math.floor((PH - GLYPH_H * cell) / 2), cell, '#1b1326', true);
   const t = pixelTexture(c);
   t.center.set(0.5, 0.5);
   t.rotation = Math.PI;
