@@ -774,10 +774,17 @@ a.btn-primary {
 }
 @media (max-width: 640px) {
   .hand-card {
-    width: 46px;
-    height: 68px;
-    margin: 0 -3px;
-    font-size: 19px;
+    width: 44px;
+    height: 66px;
+    margin: 0 -4px;
+    font-size: 18px;
+  }
+  /* 11-card Fibonacci hand: overlap more so it fits a phone */
+  .hand-cards:has(.hand-card:nth-child(9)) .hand-card {
+    width: 40px;
+    height: 60px;
+    margin: 0 -6px;
+    font-size: 16px;
   }
   .hand-hint {
     bottom: 92px;
@@ -1267,4 +1274,285 @@ a.btn-primary {
 }
 .results-main .eyebrow {
   white-space: nowrap;
+}
+
+/* ─── themes ────────────────────────────────────────────────────────────── */
+
+.themed {
+  min-height: 100%;
+}
+
+.pixelated canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+[data-theme='dungeon'] {
+  --bg: #120d1c;
+  --bg-deep: #0b0812;
+  --panel: rgba(24, 17, 36, 0.94);
+  --panel-solid: #1b1428;
+  --line: #3e3252;
+  --line-strong: #5d4c7a;
+  --ink: #f3e9d2;
+  --ink-muted: #b8a98e;
+  --ink-faint: #7d7090;
+  --card: #f3e9d2;
+  --card-ink: #1b1326;
+  --brass: #ffcc4d;
+  --brass-soft: rgba(255, 204, 77, 0.14);
+  --danger: #e0503c;
+  --ok: #5fd068;
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
+  --font-ui: 'Pixelify Sans', 'Courier New', monospace;
+  --radius: 0px;
+  --radius-sm: 0px;
+  --shadow: 6px 6px 0 rgba(0, 0, 0, 0.55);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, #2a1b3d 0%, #160f22 60%, var(--bg-deep) 100%);
+}
+
+[data-theme='dungeon'] .room {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, #2c1c40 0%, #150e20 58%, var(--bg-deep) 100%);
+}
+[data-theme='dungeon'] .room::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+}
+
+[data-theme='dungeon'] .panel,
+[data-theme='dungeon'] .code-chip,
+[data-theme='dungeon'] .timer,
+[data-theme='dungeon'] .people-chip {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 3px solid var(--line-strong);
+  box-shadow: var(--shadow);
+}
+
+[data-theme='dungeon'] .btn {
+  border-width: 3px;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+[data-theme='dungeon'] .btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+[data-theme='dungeon'] .btn-primary {
+  color: #1b1326;
+  border-color: #1b1326;
+}
+[data-theme='dungeon'] .btn-ghost {
+  box-shadow: none;
+}
+[data-theme='dungeon'] .input {
+  border-width: 3px;
+  background: #0f0a17;
+}
+[data-theme='dungeon'] .input-code {
+  font-size: 16px;
+  letter-spacing: 0.25em;
+}
+[data-theme='dungeon'] .seg {
+  border-width: 3px;
+}
+[data-theme='dungeon'] .eyebrow,
+[data-theme='dungeon'] .label {
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+[data-theme='dungeon'] .hero h1,
+[data-theme='dungeon'] .state h2 {
+  font-size: clamp(18px, 3.6vw, 26px);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+[data-theme='dungeon'] .topic h1 {
+  font-size: clamp(13px, 2vw, 20px);
+  line-height: 1.6;
+  letter-spacing: 0;
+  text-shadow: 3px 3px 0 #000;
+}
+[data-theme='dungeon'] .topic .waiting {
+  font-family: var(--font-ui);
+  font-style: normal;
+}
+[data-theme='dungeon'] .code-chip {
+  font-size: 12px;
+}
+
+[data-theme='dungeon'] .hand-card {
+  border-radius: 0;
+  border: 3px solid #1b1326;
+  font-size: 17px;
+  font-weight: 400;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55);
+  background:
+    linear-gradient(#e4d6b4, #e4d6b4) bottom / 100% 5px no-repeat,
+    var(--card);
+}
+[data-theme='dungeon'] .hand-card::before,
+[data-theme='dungeon'] .hand-card::after {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: #8a2f3c;
+}
+[data-theme='dungeon'] .hand-card[aria-pressed='true'] {
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.55), 0 0 0 3px var(--brass);
+}
+@media (max-width: 640px) {
+  [data-theme='dungeon'] .hand-card,
+  [data-theme='dungeon'] .hand-cards:has(.hand-card:nth-child(9)) .hand-card {
+    font-size: 11px;
+  }
+}
+
+[data-theme='dungeon'] .seat-name {
+  border-radius: 0;
+  border: 2px solid var(--line-strong);
+  background: #140e1f;
+  font-size: 14px;
+}
+[data-theme='dungeon'] .seat-name.me {
+  border-color: var(--brass);
+}
+[data-theme='dungeon'] .seat-dot {
+  border-radius: 0;
+}
+[data-theme='dungeon'] .seat-tag {
+  font-family: var(--font-display);
+  font-size: 7px;
+}
+[data-theme='dungeon'] .seat-menu {
+  border: 3px solid var(--line-strong);
+  box-shadow: var(--shadow);
+}
+
+[data-theme='dungeon'] .results-main .value {
+  font-size: 30px;
+  line-height: 1.2;
+  text-shadow: 3px 3px 0 #000;
+}
+[data-theme='dungeon'] .dist-bar i {
+  border-radius: 0;
+  background: repeating-linear-gradient(0deg, #ffcc4d 0 4px, #e0a830 4px 8px);
+}
+[data-theme='dungeon'] .dist-bar em {
+  font-size: 10px;
+}
+[data-theme='dungeon'] .consensus {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+[data-theme='dungeon'] .badge {
+  border-radius: 0;
+}
+[data-theme='dungeon'] .spinner {
+  border-radius: 0;
+  border-width: 4px;
+  animation-timing-function: steps(4);
+}
+[data-theme='dungeon'] .toast {
+  border-width: 3px;
+}
+
+/* theme picker swatches */
+.theme-pick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.theme-option {
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.2);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.theme-option[aria-pressed='true'] {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px var(--brass);
+}
+.theme-option .swatch {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.theme-option .swatch i {
+  display: block;
+  width: 20px;
+  height: 28px;
+}
+.theme-option .swatch.cardroom {
+  background: radial-gradient(ellipse at 50% 60%, #1c6148, #0c2019);
+}
+.theme-option .swatch.cardroom i {
+  border-radius: 3px;
+  background: #f4efe4;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+.theme-option .swatch.cardroom i:nth-child(2) {
+  background: #7a2622;
+  border: 2px solid #f4efe4;
+}
+.theme-option .swatch.dungeon {
+  background: radial-gradient(ellipse at 50% 60%, #3b2553, #120d1c);
+  image-rendering: pixelated;
+}
+.theme-option .swatch.dungeon i {
+  background: #f3e9d2;
+  border: 2px solid #1b1326;
+  box-shadow: 3px 3px 0 #000;
+}
+.theme-option .swatch.dungeon i:nth-child(2) {
+  background: #2b1640;
+  border-color: #ffcc4d;
+}
+.theme-option span {
+  display: block;
+  padding: 8px 12px 10px;
+}
+.theme-option strong {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+.theme-option small {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+.dungeon-font {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  font-weight: 400;
+}
+[data-theme='dungeon'] .hand-card[data-len='3'] {
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  [data-theme='dungeon'] .hand-cards .hand-card[data-len='3'],
+  [data-theme='dungeon'] .hand-cards:has(.hand-card:nth-child(9)) .hand-card[data-len='3'] {
+    font-size: 8px;
+  }
 }

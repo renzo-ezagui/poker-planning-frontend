@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { CloseIcon, SlidersIcon } from './Icons';
+import { THEMES, THEME_IDS } from '../themes';
 
 export interface HostActions {
   startRound: (topic: string) => void;
@@ -8,6 +9,7 @@ export interface HostActions {
   revote: () => void;
   startTimer: (seconds: number) => void;
   unban: (ip: string) => void;
+  setTheme: (theme: string) => void;
   closeRoom: () => void;
 }
 
@@ -18,9 +20,11 @@ export function HostDock({
   votedCount,
   voterCount,
   actions,
+  theme,
   onInvite,
   subscribe,
 }: {
+  theme: string;
   code: string;
   roundActive: boolean;
   revealed: boolean;
@@ -124,6 +128,19 @@ export function HostDock({
             End session
           </button>
         )}
+      </div>
+
+      <div className="dock-section">
+        <div className="eyebrow" style={{ marginBottom: 8 }}>
+          Table theme
+        </div>
+        <div className="seg" role="group" aria-label="Table theme">
+          {THEME_IDS.map((id) => (
+            <button type="button" key={id} aria-pressed={theme === id} onClick={() => actions.setTheme(id)}>
+              {THEMES[id].name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {bans.length > 0 && (

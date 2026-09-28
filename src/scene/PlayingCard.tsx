@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { cardBackTexture, cardFaceTexture } from './textures';
+import type { ThemeId } from '../themes';
 
 const CARD_W = 0.62;
 const CARD_D = 0.9;
@@ -17,6 +18,7 @@ export function PlayingCard({
   visible,
   delay = 0,
   castShadow = true,
+  theme = 'cardroom',
 }: {
   position: [number, number, number];
   value: string | null;
@@ -24,27 +26,34 @@ export function PlayingCard({
   visible: boolean;
   delay?: number;
   castShadow?: boolean;
+  theme?: ThemeId;
 }) {
   const group = useRef<THREE.Group>(null);
-  const flip = useRef(0);
-  const drop = useRef(0);
-  const revealAt = useRef<number | null>(null);
+  // start in the final pose when mounting mid-round (e.g. after a live theme switch)
+  const flip = useRef(revealed ? 1 : 0);
+  const drop = useRef(visible ? 1 : 0);
+  const revealAt = useRef<number | null>(revealed ? 0 : null);
+  const mounted = useRef(false);
 
   const materials = useMemo(() => {
-    const edge = new THREE.MeshStandardMaterial({ color: '#e9e2d2', roughness: 0.8 });
-    const back = new THREE.MeshStandardMaterial({ map: cardBackTexture(), roughness: 0.55 });
+    const edge = new THREE.MeshStandardMaterial({ color: theme === 'dungeon' ? '#c9b48a' : '#e9e2d2', roughness: 0.8 });
+    const back = new THREE.MeshStandardMaterial({ map: cardBackTexture(theme), roughness: 0.55 });
     const face = new THREE.MeshStandardMaterial({
-      map: value ? cardFaceTexture(value) : null,
+      map: value ? cardFaceTexture(value, theme) : null,
       color: value ? '#ffffff' : '#f4efe4',
       roughness: 0.6,
     });
     // box face order: +x, -x, +y, -y, +z, -z — back on top, face underneath
     return [edge, edge, back, face, edge, edge];
-  }, [value]);
+  }, [value, theme]);
 
   useEffect(() => () => materials.forEach((m) => m.dispose()), [materials]);
 
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     revealAt.current = revealed ? performance.now() + delay * 1000 : null;
   }, [revealed, delay]);
 

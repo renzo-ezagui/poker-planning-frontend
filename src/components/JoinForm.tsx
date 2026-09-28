@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { JoinRequest } from '../socket/useRoom';
+import { useTheme } from '../themes';
 
 const NAME_KEY = 'poker-planning:name';
 
@@ -14,6 +15,7 @@ function rememberedName() {
 export function JoinForm({ onJoin }: { onJoin: (req: JoinRequest) => void }) {
   const [name, setName] = useState(rememberedName);
   const [isSpectator, setIsSpectator] = useState(false);
+  const theme = useTheme();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +58,7 @@ export function JoinForm({ onJoin }: { onJoin: (req: JoinRequest) => void }) {
         </div>
       </div>
       <button className="btn btn-primary" type="submit" disabled={!name.trim()} style={{ width: '100%', height: 46, marginTop: 24 }}>
-        Take a seat
+        {theme.copy.takeSeat}
       </button>
     </form>
   );

@@ -12,6 +12,8 @@ import { ChatIcon, PeopleIcon, SoundOffIcon, SoundOnIcon } from '../components/I
 import { JoinForm } from '../components/JoinForm';
 import { playChip, playFlip, setSoundEnabled, soundEnabled } from '../lib/sound';
 import { api, type PublicRoom } from '../lib/api';
+import { ThemeContext, themeFor } from '../themes';
+import { setSoundStyle } from '../lib/sound';
 
 function downloadCsv(code: string, csv: string) {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -38,8 +40,11 @@ export function RoomPage() {
   }, [code]);
 
   if (!join) {
+    const theme = themeFor(room && room !== 'missing' ? room.theme : null);
     const closed = room === 'missing' || (room && room.status !== 'open');
     return (
+      <ThemeContext.Provider value={theme}>
+      <div className="themed" data-theme={theme.id}>
       <div className="page">
         <header className="page-head">
           <Link to="/" className="brand">
@@ -50,7 +55,7 @@ export function RoomPage() {
           <div className="eyebrow" style={{ marginBottom: 10 }}>
             Table {code}
           </div>
-          <h1>{closed ? 'This table is closed' : 'Pull up a chair'}</h1>
+          <h1>{closed ? 'This table is closed' : theme.copy.joinTitle}</h1>
           <p>
             {closed
               ? 'The session has ended or the link is wrong. Ask the host for a fresh invite.'
@@ -61,6 +66,8 @@ export function RoomPage() {
         </div>
         {!closed && <JoinForm onJoin={setJoin} />}
       </div>
+      </div>
+      </ThemeContext.Provider>
     );
   }
 
@@ -69,6 +76,8 @@ export function RoomPage() {
 
 function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLeave: () => void }) {
   const { state, actions, onEvent } = useRoom(code, join);
+  const theme = themeFor(state.theme);
+  useEffect(() => setSoundStyle(theme.sound), [theme.sound]);
   const [chatOpen, setChatOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [sound, setSound] = useState(soundEnabled());
@@ -121,8 +130,11 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
           : 'Pick a card below.';
 
   return (
+    <ThemeContext.Provider value={theme}>
+    <div className="themed" data-theme={theme.id}>
     <div className="room">
       <TableScene
+        theme={theme}
         participants={state.participants}
         meId={state.participantId}
         votedIds={state.votedIds}
@@ -179,14 +191,14 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
       <div className="topic">
         {state.roundActive ? (
           <>
-            <div className="eyebrow">{state.revealed ? 'Revealed' : 'Now estimating'}</div>
+            <div className="eyebrow">{state.revealed ? theme.copy.revealed : theme.copy.nowEstimating}</div>
             <h1>{state.topic || 'Untitled story'}</h1>
             {handHint && <div className="topic-hint">{handHint}</div>}
           </>
         ) : (
           state.status === 'joined' && (
             <>
-              <div className="waiting">The table is quiet… for now.</div>
+              <div className="waiting">{theme.copy.quiet}</div>
               {handHint && <div className="topic-hint">{handHint}</div>}
             </>
           )
@@ -207,6 +219,7 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
           votedCount={votedCount}
           voterCount={voters.length}
           actions={actions}
+          theme={state.theme}
           onInvite={() => setInviteOpen(true)}
           subscribe={onEvent}
         />
@@ -226,6 +239,8 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
 
       <StateOverlay code={code} state={state} onLeave={onLeave} />
     </div>
+    </div>
+    </ThemeContext.Provider>
   );
 }
 

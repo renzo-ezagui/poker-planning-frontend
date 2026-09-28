@@ -26,6 +26,7 @@ export function Hand({
               key={value}
               className="hand-card"
               data-value={value}
+              data-len={value.length}
               aria-pressed={selected === value}
               aria-label={`Vote ${value}`}
               disabled={disabled}

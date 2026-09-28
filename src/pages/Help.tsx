@@ -56,6 +56,11 @@ export function Help() {
           <h3>Open a table</h3>
           <ol>
             <li>Pick a deck: <b>Fibonacci</b> (0, 1, 2, 3, 5, 8, 13…) for story points, or <b>T-shirt</b> (XS–XL) for rough sizing. Both decks include <b>?</b> for “not sure”.</li>
+            <li>
+              Pick a theme: <b>Card room</b> (a classic felt table) or <b>8-bit dungeon</b> (pixel art, torches,
+              chiptune sounds). You can switch themes any time from <b>Host controls</b>, and everyone at the table
+              sees the change instantly.
+            </li>
             <li>Pick how long the table stays open (2, 8 or 24 hours). It closes by itself after that.</li>
             <li>Press <b>Open table</b>. Share the link or QR code however you like: chat, email, a slide.</li>
             <li>Press <b>Sit at table</b> and pick a name. You join like everyone else, but you also get the <b>Host controls</b> panel.</li>
