@@ -1,9 +1,9 @@
 const PALETTE = ['#d6a24a', '#c9674f', '#6fa8a0', '#a58ac2', '#8fb36b', '#d98b5f', '#7c9fd6', '#c97a9a'];
 
-export function colorFor(seed: string): string {
+export function colorFor(seed: string, palette: string[] = PALETTE): string {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return PALETTE[h % PALETTE.length];
+  return palette[h % palette.length];
 }
 
 export function initials(name: string): string {

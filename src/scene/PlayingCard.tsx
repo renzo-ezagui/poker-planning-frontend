@@ -36,6 +36,13 @@ export function PlayingCard({
   const mounted = useRef(false);
 
   const materials = useMemo(() => {
+    if (theme === 'terminal') {
+      // unlit: text-mode colours should look exactly as drawn
+      const edge = new THREE.MeshBasicMaterial({ color: '#aaaaaa' });
+      const back = new THREE.MeshBasicMaterial({ map: cardBackTexture(theme) });
+      const face = new THREE.MeshBasicMaterial({ map: value ? cardFaceTexture(value, theme) : null, color: value ? '#ffffff' : '#000000' });
+      return [edge, edge, back, face, edge, edge];
+    }
     const edge = new THREE.MeshStandardMaterial({ color: theme === 'dungeon' ? '#c9b48a' : '#e9e2d2', roughness: 0.8 });
     const back = new THREE.MeshStandardMaterial({ map: cardBackTexture(theme), roughness: 0.55 });
     const face = new THREE.MeshStandardMaterial({

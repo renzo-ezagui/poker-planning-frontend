@@ -1585,3 +1585,408 @@ a.btn-primary {
 [data-theme='dungeon'] .results-inline .consensus {
   font-size: 9px;
 }
+
+/* ─── terminal (MS-DOS) ─────────────────────────────────────────────────── */
+
+[data-theme='terminal'] {
+  --bg: #000000;
+  --bg-deep: #000000;
+  --panel: #0000aa;
+  --panel-solid: #0000aa;
+  --line: #aaaaaa;
+  --line-strong: #ffffff;
+  --ink: #ffffff;
+  --ink-muted: #aaaaaa;
+  --ink-faint: #777777;
+  --card: #aaaaaa;
+  --card-ink: #000000;
+  --brass: #ffff55;
+  --brass-soft: rgba(255, 255, 85, 0.12);
+  --danger: #ff5555;
+  --ok: #55ff55;
+  --font-display: 'VT323', 'Courier New', monospace;
+  --font-ui: 'VT323', 'Courier New', monospace;
+  --radius: 0px;
+  --radius-sm: 0px;
+  --shadow: 10px 10px 0 rgba(0, 0, 0, 0.9);
+  font-family: var(--font-ui);
+  font-size: 21px;
+  line-height: 1.25;
+  background: #000;
+  text-shadow: 0 0 6px rgba(170, 170, 170, 0.35);
+}
+
+[data-theme='terminal'] .room {
+  background: radial-gradient(ellipse 85% 75% at 50% 50%, #0a0a0a 0%, #000 70%);
+}
+/* CRT: scanlines + vignette */
+[data-theme='terminal'] .room::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 110% 100% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+[data-theme='terminal'] .panel,
+[data-theme='terminal'] .seat-menu {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: #0000aa;
+  border: 4px double #ffffff;
+  box-shadow: var(--shadow);
+}
+[data-theme='terminal'] .code-chip,
+[data-theme='terminal'] .timer,
+[data-theme='terminal'] .people-chip {
+  backdrop-filter: none;
+  background: #000;
+  border: 2px solid #aaaaaa;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+}
+
+/* [ Button ] */
+[data-theme='terminal'] .btn {
+  height: auto;
+  min-height: 34px;
+  padding: 2px 10px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  box-shadow: none;
+}
+[data-theme='terminal'] .btn:not(.btn-icon)::before {
+  content: '[';
+  margin-right: 0.35em;
+  color: #aaaaaa;
+}
+[data-theme='terminal'] .btn:not(.btn-icon)::after {
+  content: ']';
+  margin-left: 0.35em;
+  color: #aaaaaa;
+}
+[data-theme='terminal'] .btn:hover:not(:disabled),
+[data-theme='terminal'] .btn:focus-visible {
+  background: #aaaaaa;
+  color: #000;
+  outline: none;
+  text-shadow: none;
+}
+[data-theme='terminal'] .btn:hover:not(:disabled)::before,
+[data-theme='terminal'] .btn:hover:not(:disabled)::after {
+  color: #000;
+}
+[data-theme='terminal'] .btn-primary {
+  background: #00aaaa;
+  color: #000;
+  text-shadow: none;
+}
+[data-theme='terminal'] .btn-primary::before,
+[data-theme='terminal'] .btn-primary::after {
+  color: #000 !important;
+}
+[data-theme='terminal'] .btn-danger {
+  color: #ff5555;
+}
+[data-theme='terminal'] .btn-icon {
+  width: 38px;
+  height: 36px;
+  border: 2px solid #aaaaaa;
+  background: #000;
+}
+[data-theme='terminal'] .input {
+  height: 40px;
+  border: 0;
+  border-bottom: 2px solid #aaaaaa;
+  background: #000;
+  color: #ffff55;
+  font-size: 22px;
+  caret-color: #ffff55;
+}
+[data-theme='terminal'] .input:focus {
+  background: #000;
+  border-color: #ffff55;
+}
+[data-theme='terminal'] .seg {
+  border: 2px solid #aaaaaa;
+  background: #000;
+}
+[data-theme='terminal'] .seg button {
+  font-size: 20px;
+  color: #aaaaaa;
+}
+[data-theme='terminal'] .seg button[aria-pressed='true'] {
+  background: #aaaaaa;
+  color: #000;
+  text-shadow: none;
+}
+[data-theme='terminal'] .eyebrow,
+[data-theme='terminal'] .label {
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: #55ffff;
+  font-weight: 400;
+}
+
+[data-theme='terminal'] .hero h1,
+[data-theme='terminal'] .state h2 {
+  font-size: clamp(34px, 6vw, 52px);
+  letter-spacing: 0;
+  font-weight: 400;
+}
+[data-theme='terminal'] .topic h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+[data-theme='terminal'] .topic h1::after,
+[data-theme='terminal'] .topic .waiting::after {
+  content: '█';
+  margin-left: 0.15em;
+  color: #aaaaaa;
+  animation: blink 1s steps(1) infinite;
+}
+[data-theme='terminal'] .topic .waiting {
+  font-family: var(--font-ui);
+  font-style: normal;
+  font-size: 26px;
+  color: #aaaaaa;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* text-mode hand: boxes, inverted when chosen */
+[data-theme='terminal'] .hand-card {
+  border-radius: 0;
+  background: #000;
+  color: #ffffff;
+  border: 3px double #aaaaaa;
+  font-size: 30px;
+  font-weight: 400;
+  box-shadow: 6px 6px 0 #000;
+  margin: 0 3px;
+  --tilt: 0deg !important;
+}
+[data-theme='terminal'] .hand-card::before,
+[data-theme='terminal'] .hand-card::after {
+  display: none;
+}
+[data-theme='terminal'] .hand-card:hover:not(:disabled) {
+  border-color: #ffff55;
+  color: #ffff55;
+}
+[data-theme='terminal'] .hand-card[aria-pressed='true'] {
+  background: #aaaaaa;
+  color: #000;
+  border-color: #ffffff;
+  text-shadow: none;
+  box-shadow: 6px 6px 0 #000;
+}
+@media (max-width: 640px) {
+  [data-theme='terminal'] .hand-card,
+  [data-theme='terminal'] .hand-cards:has(.hand-card:nth-child(9)) .hand-card {
+    width: 30px;
+    height: 48px;
+    margin: 0 1px;
+    font-size: 20px;
+    border-width: 3px;
+  }
+}
+
+[data-theme='terminal'] .seat-name {
+  border-radius: 0;
+  border: 0;
+  background: #000;
+  font-size: 20px;
+  padding: 0 6px;
+}
+[data-theme='terminal'] .seat-name.me {
+  background: #aaaaaa;
+  color: #000;
+  text-shadow: none;
+}
+[data-theme='terminal'] .seat-dot {
+  border-radius: 0;
+}
+[data-theme='terminal'] .seat-tag {
+  font-size: 16px;
+  color: #55ffff;
+}
+
+[data-theme='terminal'] .results {
+  font-size: 20px;
+}
+[data-theme='terminal'] .results-main .value {
+  font-size: 56px;
+  font-weight: 400;
+  color: #ffff55;
+}
+[data-theme='terminal'] .results-sub {
+  font-size: 18px;
+}
+[data-theme='terminal'] .dist-bar i {
+  border-radius: 0;
+  width: 18px;
+  background: repeating-linear-gradient(0deg, #aaaaaa 0 3px, transparent 3px 5px);
+}
+[data-theme='terminal'] .dist-bar em {
+  font-size: 20px;
+  font-weight: 400;
+}
+[data-theme='terminal'] .consensus {
+  font-style: normal;
+  font-size: 24px;
+  color: #55ff55;
+}
+[data-theme='terminal'] .results-inline .results-main .value {
+  font-size: 40px;
+}
+[data-theme='terminal'] .results-inline .consensus {
+  font-size: 20px;
+}
+
+[data-theme='terminal'] .chat-msg {
+  font-size: 20px;
+}
+[data-theme='terminal'] .toast {
+  background: #aa0000;
+  border: 4px double #fff;
+  font-size: 20px;
+}
+[data-theme='terminal'] .badge {
+  border-radius: 0;
+  background: #ffff55;
+}
+[data-theme='terminal'] .spinner {
+  display: none;
+}
+
+/* F-key status bar */
+.fbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  padding: 3px 12px;
+  background: #aaaaaa;
+  color: #000;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  line-height: 1.2;
+  text-shadow: none;
+}
+.fbar button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: #000;
+  font: inherit;
+  cursor: pointer;
+}
+.fbar button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.fbar b {
+  color: #aa0000;
+  font-weight: 400;
+}
+.fbar .right {
+  margin-left: auto;
+}
+
+/* boot sequence */
+.boot {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  padding: 24px;
+  background: #000;
+  color: #aaaaaa;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  line-height: 1.3;
+  white-space: pre-wrap;
+  text-shadow: 0 0 6px rgba(170, 170, 170, 0.35);
+}
+.boot .ok {
+  color: #55ff55;
+}
+.boot .cursor {
+  animation: blink 1s steps(1) infinite;
+}
+
+.theme-pick {
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+}
+.theme-option .swatch.terminal {
+  background: #000;
+  justify-content: flex-start;
+  padding-left: 10px;
+  font-family: 'VT323', monospace;
+  color: #aaaaaa;
+  font-size: 16px;
+}
+.theme-option .swatch.terminal i {
+  width: 16px;
+  height: 26px;
+  border: 3px double #aaaaaa;
+  background: #000;
+}
+.theme-option .swatch.terminal i:nth-child(2) {
+  background: #0000aa;
+}
+.terminal-font {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+[data-theme='terminal'] .dock {
+  width: 380px;
+}
+[data-theme='terminal'] .dock-row {
+  flex-wrap: wrap;
+}
+[data-theme='terminal'] .dock-row .btn {
+  flex: 1 1 auto;
+}
+[data-theme='terminal'] .dock .seg button {
+  font-size: 18px;
+}
+[data-theme='terminal'] .seat-name {
+  max-width: none;
+}
+[data-theme='terminal'] .seat-name span {
+  overflow: visible;
+}
+
+/* the hand and host window sit on top of the F-key bar, whatever its height */
+[data-theme='terminal'] .hand {
+  bottom: calc(var(--fbar-h, 30px) + 4px);
+}
+[data-theme='terminal'] .dock {
+  bottom: calc(var(--fbar-h, 30px) + 8px);
+}
+[data-theme='terminal'] .hand-card {
+  --base-lift: 0px !important;
+}
+@media (max-width: 640px) {
+  [data-theme='terminal'] .dock {
+    width: auto;
+  }
+}

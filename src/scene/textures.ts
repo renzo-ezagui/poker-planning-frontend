@@ -134,7 +134,7 @@ export async function whenFontsReady(): Promise<void> {
   if (typeof document === 'undefined' || !document.fonts) return;
   try {
     await Promise.race([
-      document.fonts.load('700 120px Fraunces'),
+      Promise.all([document.fonts.load('700 120px Fraunces'), document.fonts.load('80px VT323')]),
       new Promise((r) => setTimeout(r, 2500)),
     ]);
   } catch {
@@ -243,13 +243,74 @@ function dungeonFelt(): THREE.Texture {
   return dungeonFeltTex;
 }
 
+// ─── terminal: text-mode cards (box-drawing borders, VT323) ─────────────────
+
+const TW = 128;
+const TH = 184;
+const TERM_FONT = 'VT323, "Courier New", monospace';
+
+let terminalBackTex: THREE.Texture | null = null;
+
+function terminalBack(): THREE.Texture {
+  if (terminalBackTex) return terminalBackTex;
+  const [c, g] = canvas();
+  c.width = TW;
+  c.height = TH;
+  g.fillStyle = '#000';
+  g.fillRect(0, 0, TW, TH);
+  g.font = `20px ${TERM_FONT}`;
+  g.textBaseline = 'top';
+  g.fillStyle = '#0000aa';
+  g.fillRect(6, 6, TW - 12, TH - 12);
+  g.fillStyle = '#5555ff';
+  for (let y = 12; y < TH - 20; y += 16) {
+    for (let x = 12; x < TW - 16; x += 10) g.fillText('░', x, y);
+  }
+  g.strokeStyle = '#aaaaaa';
+  g.lineWidth = 3;
+  g.strokeRect(4, 4, TW - 8, TH - 8);
+  g.strokeRect(10, 10, TW - 20, TH - 20);
+  terminalBackTex = new THREE.CanvasTexture(c);
+  terminalBackTex.colorSpace = THREE.SRGBColorSpace;
+  return terminalBackTex;
+}
+
+const terminalFaces = new Map<string, THREE.Texture>();
+
+function terminalFace(value: string): THREE.Texture {
+  const cached = terminalFaces.get(value);
+  if (cached) return cached;
+  const [c, g] = canvas();
+  c.width = TW;
+  c.height = TH;
+  g.fillStyle = '#000';
+  g.fillRect(0, 0, TW, TH);
+  g.strokeStyle = '#ffffff';
+  g.lineWidth = 3;
+  g.strokeRect(4, 4, TW - 8, TH - 8);
+  g.strokeRect(10, 10, TW - 20, TH - 20);
+  g.fillStyle = '#ffff55';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.font = `${value.length >= 3 ? 64 : value.length === 2 ? 84 : 110}px ${TERM_FONT}`;
+  g.fillText(value, TW / 2, TH / 2 + 4);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.center.set(0.5, 0.5);
+  t.rotation = Math.PI;
+  terminalFaces.set(value, t);
+  return t;
+}
+
 // ─── theme-aware entry points ───────────────────────────────────────────────
 
 export function cardBackTexture(theme: ThemeId = 'cardroom') {
+  if (theme === 'terminal') return terminalBack();
   return theme === 'dungeon' ? dungeonBack() : cardroomBack();
 }
 
 export function cardFaceTexture(value: string, theme: ThemeId = 'cardroom') {
+  if (theme === 'terminal') return terminalFace(value);
   return theme === 'dungeon' ? dungeonFace(value) : cardroomFace(value);
 }
 

@@ -11,7 +11,7 @@ export function ThemePicker({ value, onChange }: { value: string; onChange: (id:
             <i />
           </div>
           <span>
-            <strong className={id === 'dungeon' ? 'dungeon-font' : undefined}>{THEMES[id].name}</strong>
+            <strong className={id === 'dungeon' ? 'dungeon-font' : id === 'terminal' ? 'terminal-font' : undefined}>{THEMES[id].name}</strong>
             <small>{THEMES[id].tagline}</small>
           </span>
         </button>
