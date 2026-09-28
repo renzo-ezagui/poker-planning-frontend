@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CloseIcon, SlidersIcon } from './Icons';
+import { CloseIcon } from './Icons';
 import { THEMES, THEME_IDS } from '../themes';
 
 export interface HostActions {
@@ -23,7 +23,9 @@ export function HostDock({
   theme,
   onInvite,
   subscribe,
+  onClose,
 }: {
+  onClose: () => void;
   theme: string;
   code: string;
   roundActive: boolean;
@@ -34,7 +36,6 @@ export function HostDock({
   onInvite: () => void;
   subscribe: (event: string, handler: () => void) => () => void;
 }) {
-  const [open, setOpen] = useState(() => window.innerWidth > 900);
   const [topic, setTopic] = useState('');
   const [bans, setBans] = useState<string[]>([]);
   const [confirmClose, setConfirmClose] = useState(false);
@@ -56,21 +57,13 @@ export function HostDock({
     setTopic('');
   }
 
-  if (!open) {
-    return (
-      <button className="btn dock-toggle panel" onClick={() => setOpen(true)}>
-        <SlidersIcon /> Host controls
-      </button>
-    );
-  }
-
   const canReveal = roundActive && !revealed;
 
   return (
     <section className="dock panel" aria-label="Host controls">
       <div className="dock-head">
         <span className="eyebrow">Host controls</span>
-        <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setOpen(false)} aria-label="Hide host controls">
+        <button className="btn btn-ghost btn-icon btn-sm" onClick={onClose} aria-label="Hide host controls">
           <CloseIcon />
         </button>
       </div>
