@@ -41,6 +41,22 @@ cookie is `SameSite=Strict`.
   the screen.
 - The three.js scene is lazy-loaded, so the home and host pages stay light.
 
+## Themes
+
+Each table has a theme, picked by the host when opening it or switched live from the
+host controls (`room:theme`). A theme is one entry in `src/themes/index.ts`:
+
+- **scene:** table colours, geometry detail, avatar shape, decor, torches, and
+  `pixelScale` (renders the canvas at a fraction of the resolution and upscales with
+  hard pixels)
+- **sound:** `soft` or `chiptune` (`src/lib/sound.ts`)
+- **copy:** the few strings with personality ("Current quest", "Party in sync!")
+- **CSS:** token overrides under `[data-theme='<id>']` in `src/index.css`
+- **card art:** per-theme branches in `src/scene/textures.ts` (the dungeon uses a
+  5×7 bitmap font from `src/scene/pixelFont.ts`)
+
+To add a theme, extend `THEMES` there and `THEMES` in the backend's `room.schema.ts`.
+
 ## Running tests
 
 `npm run test`

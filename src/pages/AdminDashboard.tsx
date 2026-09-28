@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api, ApiError, type PublicRoom } from '../lib/api';
 import { DECK_LABELS } from '../lib/decks';
 import { InviteModal } from '../components/InviteModal';
+import { ThemePicker } from '../components/ThemePicker';
+import { THEMES, type ThemeId } from '../themes';
 
 function timeLeft(expiresAt: string) {
   const ms = new Date(expiresAt).getTime() - Date.now();
@@ -18,6 +20,7 @@ export function AdminDashboard() {
   const [rooms, setRooms] = useState<PublicRoom[]>([]);
   const [deckType, setDeckType] = useState<'fibonacci' | 'tshirt'>('fibonacci');
   const [hours, setHours] = useState(8);
+  const [theme, setTheme] = useState<ThemeId>('cardroom');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [invite, setInvite] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export function AdminDashboard() {
     try {
       const room = await api<PublicRoom>('/rooms', {
         method: 'POST',
-        body: JSON.stringify({ deckType, expiresInHours: hours }),
+        body: JSON.stringify({ deckType, expiresInHours: hours, theme }),
       });
       loadRooms();
       setInvite(room.code);
@@ -101,6 +104,10 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="field">
+            <span className="label">Theme</span>
+            <ThemePicker value={theme} onChange={setTheme} />
+          </div>
+          <div className="field">
             <span className="label">Closes after</span>
             <div className="seg" role="group" aria-label="Table lifetime">
               {[2, 8, 24].map((h) => (
@@ -127,7 +134,7 @@ export function AdminDashboard() {
                   <div>
                     <div className="room-code">{r.code}</div>
                     <div className="room-meta">
-                      {DECK_LABELS[r.deckType]?.name} · {timeLeft(r.expiresAt)}
+                      {DECK_LABELS[r.deckType]?.name} · {THEMES[(r.theme as ThemeId) ?? 'cardroom']?.name ?? 'Card room'} · {timeLeft(r.expiresAt)}
                     </div>
                   </div>
                   <div className="room-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

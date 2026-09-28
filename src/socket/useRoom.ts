@@ -39,6 +39,7 @@ export interface RoomState {
   isHost: boolean;
   muted: boolean;
   deckType: string;
+  theme: string;
   topic: string;
   roundActive: boolean;
   revealed: boolean;
@@ -60,6 +61,7 @@ const initial: RoomState = {
   isHost: false,
   muted: false,
   deckType: 'fibonacci',
+  theme: 'cardroom',
   topic: '',
   roundActive: false,
   revealed: false,
@@ -84,6 +86,7 @@ type Action =
   | { type: 'reveal'; votes: Vote[]; stats: Stats | null }
   | { type: 'revote' }
   | { type: 'timer'; endsAt: number }
+  | { type: 'theme'; theme: string }
   | { type: 'chat'; message: ChatMessage }
   | { type: 'muted'; muted: boolean }
   | { type: 'removed'; message: string }
@@ -115,6 +118,7 @@ function reducer(state: RoomState, action: Action): RoomState {
         isHost: Boolean(p.isHost),
         muted: Boolean(p.muted),
         deckType: rs.deckType ?? state.deckType,
+        theme: rs.theme ?? state.theme,
         topic: rs.topic ?? '',
         roundActive: Boolean(rs.roundActive),
         revealed: rs.revealState === 'revealed',
@@ -152,6 +156,8 @@ function reducer(state: RoomState, action: Action): RoomState {
       return { ...state, revealed: false, votes: [], stats: null, votedIds: [], myVote: null, timerEndsAt: null };
     case 'timer':
       return { ...state, timerEndsAt: action.endsAt };
+    case 'theme':
+      return { ...state, theme: action.theme };
     case 'chat':
       return { ...state, messages: [...state.messages.slice(-199), action.message] };
     case 'muted':
@@ -240,6 +246,7 @@ export function useRoom(code: string, join: JoinRequest | null) {
     s.on('round:reveal', (p) => dispatch({ type: 'reveal', votes: p.votes ?? [], stats: p.stats ?? null }));
     s.on('round:revote', () => dispatch({ type: 'revote' }));
     s.on('timer:start', (p) => dispatch({ type: 'timer', endsAt: p.endsAt }));
+    s.on('room:theme', (p) => dispatch({ type: 'theme', theme: p.theme }));
     s.on('chat:message', (m) => dispatch({ type: 'chat', message: m }));
     s.on('moderation:muted', (p) => dispatch({ type: 'muted', muted: Boolean(p.muted) }));
     s.on('moderation:removed', (p) => {
@@ -307,6 +314,9 @@ export function useRoom(code: string, join: JoinRequest | null) {
       },
       unban(ip: string) {
         emit('participant:unban', { ip });
+      },
+      setTheme(theme: string) {
+        emit('room:theme', { theme });
       },
       closeRoom() {
         emit('room:close');

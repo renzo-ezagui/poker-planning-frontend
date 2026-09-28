@@ -1,6 +1,24 @@
 // Tiny synthesized sound effects — no audio assets to ship or license.
 let ctx: AudioContext | null = null;
 let enabled = readPref();
+let style: 'soft' | 'chiptune' = 'soft';
+
+export function setSoundStyle(next: 'soft' | 'chiptune') {
+  style = next;
+}
+
+function blip(ac: AudioContext, freq: number, start: number, dur: number, gain = 0.07, to?: number) {
+  const osc = ac.createOscillator();
+  const g = ac.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(freq, start);
+  if (to) osc.frequency.exponentialRampToValueAtTime(to, start + dur);
+  g.gain.setValueAtTime(gain, start);
+  g.gain.setValueAtTime(0, start + dur);
+  osc.connect(g).connect(ac.destination);
+  osc.start(start);
+  osc.stop(start + dur + 0.01);
+}
 
 function readPref(): boolean {
   try {
@@ -36,6 +54,10 @@ function audio(): AudioContext | null {
 export function playFlip(delay = 0) {
   const ac = audio();
   if (!ac) return;
+  if (style === 'chiptune') {
+    blip(ac, 330, ac.currentTime + delay, 0.07, 0.06, 990);
+    return;
+  }
   const t = ac.currentTime + delay;
   const len = Math.floor(ac.sampleRate * 0.14);
   const buffer = ac.createBuffer(1, len, ac.sampleRate);
@@ -58,6 +80,11 @@ export function playFlip(delay = 0) {
 export function playChip(delay = 0) {
   const ac = audio();
   if (!ac) return;
+  if (style === 'chiptune') {
+    // rising major arpeggio: C6 E6 G6 C7
+    [1046.5, 1318.5, 1568, 2093].forEach((f, i) => blip(ac, f, ac.currentTime + delay + i * 0.06, 0.055, 0.05));
+    return;
+  }
   [0, 0.07].forEach((offset, i) => {
     const t = ac.currentTime + delay + offset;
     const osc = ac.createOscillator();
@@ -77,6 +104,10 @@ export function playChip(delay = 0) {
 export function playChime() {
   const ac = audio();
   if (!ac) return;
+  if (style === 'chiptune') {
+    [523.25, 659.25, 783.99, 659.25, 1046.5].forEach((f, i) => blip(ac, f, ac.currentTime + i * 0.11, i === 4 ? 0.3 : 0.09, 0.06));
+    return;
+  }
   [659.25, 987.77].forEach((freq, i) => {
     const t = ac.currentTime + i * 0.16;
     const osc = ac.createOscillator();

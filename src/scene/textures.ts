@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { drawPixelText, pixelTextWidth, GLYPH_H } from './pixelFont';
+import type { ThemeId } from '../themes';
 
 const W = 256;
 const H = 368;
@@ -29,7 +31,7 @@ function toTexture(c: HTMLCanvasElement) {
 
 let backTexture: THREE.Texture | null = null;
 
-export function cardBackTexture(): THREE.Texture {
+function cardroomBack(): THREE.Texture {
   if (backTexture) return backTexture;
   const [c, g] = canvas();
   g.fillStyle = '#f4efe4';
@@ -75,7 +77,7 @@ export function cardBackTexture(): THREE.Texture {
 
 const faceCache = new Map<string, THREE.Texture>();
 
-export function cardFaceTexture(value: string): THREE.Texture {
+function cardroomFace(value: string): THREE.Texture {
   const cached = faceCache.get(value);
   if (cached) return cached;
   const [c, g] = canvas();
@@ -109,7 +111,7 @@ export function cardFaceTexture(value: string): THREE.Texture {
 
 let feltTexture: THREE.Texture | null = null;
 
-export function feltNoiseTexture(): THREE.Texture {
+function cardroomFelt(): THREE.Texture {
   if (feltTexture) return feltTexture;
   const c = document.createElement('canvas');
   c.width = c.height = 256;
@@ -138,4 +140,121 @@ export async function whenFontsReady(): Promise<void> {
   } catch {
     // font unavailable — Georgia fallback is fine
   }
+}
+
+// ─── 8-bit dungeon: tiny canvases, nearest-neighbour filtering ──────────────
+
+const PW = 32;
+const PH = 46;
+
+function pixelTexture(c: HTMLCanvasElement) {
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.magFilter = THREE.NearestFilter;
+  t.minFilter = THREE.NearestFilter;
+  t.generateMipmaps = false;
+  return t;
+}
+
+function pixelCanvas(w = PW, h = PH): [HTMLCanvasElement, CanvasRenderingContext2D] {
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const g = c.getContext('2d')!;
+  g.imageSmoothingEnabled = false;
+  return [c, g];
+}
+
+const GEM = ['...#...', '..###..', '.##.##.', '##...##', '.##.##.', '..###..', '...#...'];
+
+let dungeonBackTex: THREE.Texture | null = null;
+
+function dungeonBack(): THREE.Texture {
+  if (dungeonBackTex) return dungeonBackTex;
+  const [c, g] = pixelCanvas();
+  g.fillStyle = '#f3e9d2';
+  g.fillRect(0, 0, PW, PH);
+  g.fillStyle = '#2b1640';
+  g.fillRect(2, 2, PW - 4, PH - 4);
+  g.fillStyle = '#3d2160';
+  for (let y = 3; y < PH - 3; y += 2) {
+    for (let x = 3 + ((y / 2) % 2); x < PW - 3; x += 2) g.fillRect(x, y, 1, 1);
+  }
+  g.fillStyle = '#ffcc4d';
+  g.fillRect(4, 4, PW - 8, 1);
+  g.fillRect(4, PH - 5, PW - 8, 1);
+  g.fillRect(4, 4, 1, PH - 8);
+  g.fillRect(PW - 5, 4, 1, PH - 8);
+  const ox = Math.floor(PW / 2) - 3;
+  const oy = Math.floor(PH / 2) - 3;
+  GEM.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === '#') {
+        g.fillStyle = '#ffcc4d';
+        g.fillRect(ox + x, oy + y, 1, 1);
+      } else if (row[x] === '.' && Math.abs(x - 3) + Math.abs(y - 3) < 3) {
+        g.fillStyle = '#5fd0c8';
+        g.fillRect(ox + x, oy + y, 1, 1);
+      }
+    }
+  });
+  dungeonBackTex = pixelTexture(c);
+  return dungeonBackTex;
+}
+
+const dungeonFaces = new Map<string, THREE.Texture>();
+
+function dungeonFace(value: string): THREE.Texture {
+  const cached = dungeonFaces.get(value);
+  if (cached) return cached;
+  const [c, g] = pixelCanvas();
+  g.fillStyle = '#c9b48a';
+  g.fillRect(0, 0, PW, PH);
+  g.fillStyle = '#f3e9d2';
+  g.fillRect(1, 1, PW - 2, PH - 2);
+  g.fillStyle = '#e4d6b4';
+  g.fillRect(1, PH - 3, PW - 2, 2);
+  const cell = pixelTextWidth(value, 2) <= PW - 6 ? 2 : 1;
+  const w = pixelTextWidth(value, cell);
+  drawPixelText(g, value, Math.floor((PW - w) / 2), Math.floor((PH - GLYPH_H * cell) / 2), cell, '#1b1326');
+  if (value.length <= 2) {
+    drawPixelText(g, value, 3, 3, 1, '#8a2f3c');
+  }
+  const t = pixelTexture(c);
+  t.center.set(0.5, 0.5);
+  t.rotation = Math.PI;
+  dungeonFaces.set(value, t);
+  return t;
+}
+
+let dungeonFeltTex: THREE.Texture | null = null;
+
+function dungeonFelt(): THREE.Texture {
+  if (dungeonFeltTex) return dungeonFeltTex;
+  const [c, g] = pixelCanvas(16, 16);
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      const v = 120 + Math.floor(Math.random() * 3) * 14;
+      g.fillStyle = `rgb(${v},${v},${v})`;
+      g.fillRect(x, y, 1, 1);
+    }
+  }
+  dungeonFeltTex = pixelTexture(c);
+  dungeonFeltTex.wrapS = dungeonFeltTex.wrapT = THREE.RepeatWrapping;
+  dungeonFeltTex.repeat.set(10, 10);
+  return dungeonFeltTex;
+}
+
+// ─── theme-aware entry points ───────────────────────────────────────────────
+
+export function cardBackTexture(theme: ThemeId = 'cardroom') {
+  return theme === 'dungeon' ? dungeonBack() : cardroomBack();
+}
+
+export function cardFaceTexture(value: string, theme: ThemeId = 'cardroom') {
+  return theme === 'dungeon' ? dungeonFace(value) : cardroomFace(value);
+}
+
+export function feltNoiseTexture(theme: ThemeId = 'cardroom') {
+  return theme === 'dungeon' ? dungeonFelt() : cardroomFelt();
 }

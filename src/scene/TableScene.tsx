@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PlayingCard } from './PlayingCard';
 import { Seat, type SeatActions } from './Seat';
 import { feltNoiseTexture, whenFontsReady } from './textures';
 import type { RosterEntry, Vote } from '../socket/useRoom';
+import type { Theme } from '../themes';
 
 const RX = 3.6; // seat ellipse radii (on the felt, inside the rail)
 const RZ = 2.4;
@@ -17,31 +18,83 @@ function isLowPower() {
   return small || cores <= 4;
 }
 
-function Table({ shadows, portrait }: { shadows: boolean; portrait: boolean }) {
-  const felt = useMemo(() => feltNoiseTexture(), []);
+function Table({ shadows, portrait, theme }: { shadows: boolean; portrait: boolean; theme: Theme }) {
+  const felt = useMemo(() => feltNoiseTexture(theme.id), [theme.id]);
+  const sc = theme.scene;
+  const seg = sc.segments;
   return (
     <group scale={portrait ? [1, 1, TABLE_SCALE_X] : [TABLE_SCALE_X, 1, 1]}>
       {/* felt */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow={shadows}>
-        <circleGeometry args={[3, 96]} />
-        <meshStandardMaterial color="#17573f" roughness={0.95} map={felt} />
+        <circleGeometry args={[3, seg]} />
+        <meshStandardMaterial color={sc.felt} roughness={0.95} map={felt} flatShading={sc.flat} />
       </mesh>
       {/* inner betting line */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.003, 0]}>
-        <ringGeometry args={[1.95, 1.98, 128]} />
-        <meshBasicMaterial color="#d6a24a" transparent opacity={0.28} />
+        <ringGeometry args={[1.95, sc.flat ? 2.02 : 1.98, Math.max(seg, 24)]} />
+        <meshBasicMaterial color={sc.line} transparent opacity={sc.lineOpacity} />
       </mesh>
-      {/* wooden rail */}
+      {/* rail */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} castShadow={shadows} receiveShadow={shadows}>
-        <torusGeometry args={[3.12, 0.2, 24, 128]} />
-        <meshStandardMaterial color="#4a2c1a" roughness={0.42} metalness={0.05} />
+        <torusGeometry args={[3.12, 0.2, sc.flat ? 4 : 24, sc.flat ? seg : 128]} />
+        <meshStandardMaterial color={sc.rail} roughness={sc.flat ? 0.95 : 0.42} metalness={0.05} flatShading={sc.flat} />
       </mesh>
-      {/* table body */}
-      {/* top sits just under the felt — sharing y=0 with it z-fights into streaks */}
+      {/* table body — top sits just under the felt; sharing y=0 z-fights into streaks */}
       <mesh position={[0, -0.47, 0]} receiveShadow={shadows}>
-        <cylinderGeometry args={[3.2, 2.9, 0.9, 96]} />
-        <meshStandardMaterial color="#2a1a10" roughness={0.7} />
+        <cylinderGeometry args={[3.2, 2.9, 0.9, seg]} />
+        <meshStandardMaterial color={sc.body} roughness={0.7} flatShading={sc.flat} />
       </mesh>
+    </group>
+  );
+}
+
+function Gem({ position, color, speed }: { position: [number, number, number]; color: string; speed: number }) {
+  const ref = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const t = clock.getElapsedTime() * speed;
+    ref.current.rotation.y = t;
+    ref.current.position.y = position[1] + Math.sin(t * 1.7) * 0.06;
+  });
+  return (
+    <mesh ref={ref} position={position} castShadow>
+      <octahedronGeometry args={[0.2, 0]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.35} roughness={0.3} flatShading />
+    </mesh>
+  );
+}
+
+function Torch({ position }: { position: [number, number, number] }) {
+  const light = useRef<THREE.PointLight>(null);
+  const flame = useRef<THREE.Mesh>(null);
+  const seed = useMemo(() => Math.random() * 10, []);
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime() + seed;
+    // stepped flicker: sums of sines, quantized so it feels 8-bit rather than smooth
+    const f = Math.round((Math.sin(t * 9) * 0.5 + Math.sin(t * 23) * 0.3 + Math.sin(t * 3.1) * 0.2) * 4) / 4;
+    if (light.current) light.current.intensity = 9 + f * 2.5;
+    if (flame.current) flame.current.scale.set(1, 1 + f * 0.18, 1);
+  });
+  return (
+    <group position={position}>
+      {/* sconce standing on the rail */}
+      <mesh position={[0, 0.3, 0]} castShadow>
+        <boxGeometry args={[0.12, 0.6, 0.12]} />
+        <meshStandardMaterial color="#4a3222" flatShading />
+      </mesh>
+      <mesh position={[0, 0.62, 0]}>
+        <boxGeometry args={[0.24, 0.08, 0.24]} />
+        <meshStandardMaterial color="#6b6478" flatShading />
+      </mesh>
+      <mesh ref={flame} position={[0, 0.8, 0]}>
+        <boxGeometry args={[0.16, 0.26, 0.16]} />
+        <meshBasicMaterial color="#ffc24a" />
+      </mesh>
+      <mesh position={[0, 0.86, 0]}>
+        <boxGeometry args={[0.08, 0.12, 0.08]} />
+        <meshBasicMaterial color="#fff1b8" />
+      </mesh>
+      <pointLight ref={light} color="#ff9a3c" intensity={9} distance={8} decay={1.4} position={[0, 1, 0]} />
     </group>
   );
 }
@@ -108,7 +161,9 @@ export function TableScene({
   myVote,
   canModerate,
   actions,
+  theme,
 }: {
+  theme: Theme;
   participants: RosterEntry[];
   meId: string | null;
   votedIds: string[];
@@ -144,31 +199,50 @@ export function TableScene({
 
   return (
     <Canvas
+      key={theme.id}
+      className={theme.pixelScale ? 'pixelated' : undefined}
       shadows={!lowPower}
-      dpr={lowPower ? 1 : [1, 1.75]}
-      gl={{ antialias: !lowPower, alpha: true }}
+      dpr={theme.pixelScale ?? (lowPower ? 1 : [1, 1.75])}
+      gl={{ antialias: !lowPower && !theme.pixelScale, alpha: true }}
       camera={{ position: [0, 9, 9], fov: 38 }}
       onPointerMissed={() => setMenuFor(null)}
     >
-      <hemisphereLight args={['#fff4dc', '#0b1a14', 0.55]} />
-      <ambientLight intensity={0.25} />
+      <hemisphereLight args={[theme.scene.hemiSky, theme.scene.hemiGround, theme.scene.torches ? 0.75 : 0.55]} />
+      <ambientLight intensity={theme.scene.torches ? 0.3 : 0.25} />
       <spotLight
         position={[0, 9, 1.5]}
         angle={0.62}
         penumbra={0.75}
-        intensity={90}
+        intensity={theme.scene.torches ? 80 : 90}
         decay={2}
-        color="#ffe7bf"
+        color={theme.scene.light}
         castShadow={!lowPower}
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0006}
         shadow-normalBias={0.04}
       />
+      {theme.scene.torches && (
+        <>
+          {/* on the rail: at the sides in landscape, at the far corners in portrait */}
+          <Torch position={portrait ? [-1.56, 0.1, -3.12 * TABLE_SCALE_X * 0.866] : [-3.12 * TABLE_SCALE_X, 0.1, 0]} />
+          <Torch position={portrait ? [1.56, 0.1, -3.12 * TABLE_SCALE_X * 0.866] : [3.12 * TABLE_SCALE_X, 0.1, 0]} />
+        </>
+      )}
       <CameraRig focus={revealed} portrait={portrait} />
-      <Table shadows={!lowPower} portrait={portrait} />
-      <ChipStack position={[-0.55, 0, -0.15]} colors={['#7a2622', '#7a2622', '#f4efe4', '#d6a24a']} />
-      <ChipStack position={[0.5, 0, -0.35]} colors={['#1f3b5c', '#f4efe4', '#1f3b5c']} />
-      <ChipStack position={[0.05, 0, -0.75]} colors={['#d6a24a', '#d6a24a']} />
+      <Table shadows={!lowPower} portrait={portrait} theme={theme} />
+      {theme.scene.decor === 'gems' ? (
+        <>
+          <Gem position={[-0.42, 0.34, 0.05]} color="#5fd0c8" speed={0.9} />
+          <Gem position={[0.42, 0.38, 0]} color="#e0503c" speed={1.1} />
+          <Gem position={[0, 0.32, -0.38]} color="#ffcc4d" speed={0.75} />
+        </>
+      ) : (
+        <>
+          <ChipStack position={[-0.55, 0, -0.15]} colors={['#7a2622', '#7a2622', '#f4efe4', '#d6a24a']} />
+          <ChipStack position={[0.5, 0, -0.35]} colors={['#1f3b5c', '#f4efe4', '#1f3b5c']} />
+          <ChipStack position={[0.05, 0, -0.75]} colors={['#d6a24a', '#d6a24a']} />
+        </>
+      )}
 
       {seats.map(({ entry, seat, card }, i) => {
         const isMe = entry.participantId === meId;
@@ -185,6 +259,7 @@ export function TableScene({
               menuOpen={menuFor === entry.participantId}
               onToggleMenu={setMenuFor}
               actions={actions}
+              theme={theme}
             />
             {!entry.isSpectator && (
               <PlayingCard
@@ -194,6 +269,7 @@ export function TableScene({
                 visible={hasVoted}
                 delay={i * 0.12}
                 castShadow={!lowPower}
+                theme={theme.id}
               />
             )}
           </group>

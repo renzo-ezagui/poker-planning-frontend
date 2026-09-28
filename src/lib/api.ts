@@ -30,6 +30,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 export interface PublicRoom {
   code: string;
   deckType: 'fibonacci' | 'tshirt';
+  theme?: string;
   status: 'open' | 'closed';
   currentTopic: string;
   expiresAt: string;

@@ -1,11 +1,13 @@
 import type { Stats, Vote } from '../socket/useRoom';
 import { DECK_VALUES } from '../lib/decks';
+import { useTheme } from '../themes';
 
 function fmt(n: number) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
 export function Results({ votes, stats, deckType }: { votes: Vote[]; stats: Stats | null; deckType: string }) {
+  const theme = useTheme();
   if (votes.length === 0) {
     return (
       <div className="results panel">
@@ -29,7 +31,7 @@ export function Results({ votes, stats, deckType }: { votes: Vote[]; stats: Stat
   return (
     <div className="results panel" aria-live="polite">
       <div className="results-main">
-        <div className="eyebrow">{stats ? 'Average' : 'Most voted'}</div>
+        <div className="eyebrow">{stats ? theme.copy.average : theme.copy.mostVoted}</div>
         <div className="value">{stats ? fmt(stats.avg) : top.join(' / ')}</div>
         {stats && (
           <div className="results-sub">
@@ -43,7 +45,7 @@ export function Results({ votes, stats, deckType }: { votes: Vote[]; stats: Stat
         )}
       </div>
       {consensus ? (
-        <div className="consensus">Consensus!</div>
+        <div className="consensus">{theme.copy.consensus}</div>
       ) : (
         <div className="dist" aria-label="Vote distribution">
           {entries.map(([value, count]) => (
