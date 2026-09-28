@@ -4,12 +4,12 @@ import { describe, it, expect } from 'vitest';
 import App from './App';
 
 describe('App routing', () => {
-  it('renders the join screen at /', () => {
+  it('renders the home screen at /', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>,
     );
-    expect(screen.getByText(/join a room/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /find the table/i })).toBeInTheDocument();
   });
 });
