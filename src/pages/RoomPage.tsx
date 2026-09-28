@@ -10,6 +10,7 @@ import { Timer } from '../components/Timer';
 import { InviteModal } from '../components/InviteModal';
 import { ChatIcon, PeopleIcon, SlidersIcon, SoundOffIcon, SoundOnIcon } from '../components/Icons';
 import { JoinForm } from '../components/JoinForm';
+import { BootScreen, FKeyBar } from '../components/Terminal';
 import { playChip, playFlip, setSoundEnabled, soundEnabled } from '../lib/sound';
 import { api, type PublicRoom } from '../lib/api';
 import { ThemeContext, themeFor } from '../themes';
@@ -82,17 +83,36 @@ export function RoomPage() {
     );
   }
 
-  return <Table code={code} join={join} onLeave={() => setJoin(null)} />;
+  return (
+    <Table
+      code={code}
+      join={join}
+      initialTheme={room && room !== 'missing' ? room.theme : undefined}
+      onLeave={() => setJoin(null)}
+    />
+  );
 }
 
-function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLeave: () => void }) {
+function Table({
+  code,
+  join,
+  initialTheme,
+  onLeave,
+}: {
+  code: string;
+  join: JoinRequest;
+  initialTheme?: string;
+  onLeave: () => void;
+}) {
   const { state, actions, onEvent } = useRoom(code, join);
-  const theme = themeFor(state.theme);
+  // until we're seated the socket hasn't told us the theme; the REST lookup has
+  const theme = themeFor(state.status === 'joined' ? state.theme : (initialTheme ?? state.theme));
   useEffect(() => setSoundStyle(theme.sound), [theme.sound]);
   const [chatOpen, setChatOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [hostOpen, setHostOpen] = useState(() => window.innerWidth > 900);
   const compact = useMediaQuery('(max-width: 640px)');
+  const [booting, setBooting] = useState(true);
   const [sound, setSound] = useState(soundEnabled());
   const [unread, setUnread] = useState(0);
   const seenMessages = useRef(0);
@@ -121,6 +141,18 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
     const id = setTimeout(actions.clearNotice, 3800);
     return () => clearTimeout(id);
   }, [state.notice, actions]);
+
+  const fkeys = useMemo(
+    () => ({
+      help: () => window.open('/help', '_blank', 'noopener'),
+      chat: () => setChatOpen((o) => !o),
+      host: () => setHostOpen((o) => !o),
+      reveal: actions.reveal,
+      revote: actions.revote,
+      timer: () => actions.startTimer(60),
+    }),
+    [actions],
+  );
 
   const voters = useMemo(() => state.participants.filter((p) => !p.isSpectator), [state.participants]);
   const votedCount = voters.filter((p) => state.votedIds.includes(p.participantId)).length;
@@ -265,7 +297,22 @@ function Table({ code, join, onLeave }: { code: string; join: JoinRequest; onLea
         </div>
       )}
 
-      <StateOverlay code={code} state={state} onLeave={onLeave} />
+      {theme.terminal && state.status === 'joined' && (
+        <FKeyBar
+          code={code}
+          people={state.participants.length}
+          isHost={state.isHost}
+          canReveal={state.roundActive && !state.revealed}
+          roundActive={state.roundActive}
+          actions={fkeys}
+        />
+      )}
+
+      {theme.terminal && booting && (state.status === 'connecting' || state.status === 'joined' || state.status === 'idle') ? (
+        <BootScreen code={code} done={state.status === 'joined'} onFinished={() => setBooting(false)} />
+      ) : (
+        <StateOverlay code={code} state={state} onLeave={onLeave} />
+      )}
     </div>
     </div>
     </ThemeContext.Provider>

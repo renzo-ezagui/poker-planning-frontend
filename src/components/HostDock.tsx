@@ -130,7 +130,7 @@ export function HostDock({
         <div className="seg" role="group" aria-label="Table theme">
           {THEME_IDS.map((id) => (
             <button type="button" key={id} aria-pressed={theme === id} onClick={() => actions.setTheme(id)}>
-              {THEMES[id].name}
+              {THEMES[id].short}
             </button>
           ))}
         </div>

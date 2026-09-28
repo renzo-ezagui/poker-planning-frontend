@@ -55,7 +55,7 @@ host controls (`room:theme`). A theme is one entry in `src/themes/index.ts`:
 - **card art:** per-theme branches in `src/scene/textures.ts` (the dungeon uses a
   5×7 bitmap font from `src/scene/pixelFont.ts`)
 
-To add a theme, extend `THEMES` there and `THEMES` in the backend's `room.schema.ts`.
+Current themes: `cardroom`, `dungeon` (8-bit, pixel render) and `terminal` (MS-DOS: wireframe vector table, text-mode cards, boot screen, working F-key bar). To add a theme, extend `THEMES` there and `THEMES` in the backend's `room.schema.ts`.
 
 ## Running tests
 

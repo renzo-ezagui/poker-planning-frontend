@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -35,7 +35,9 @@ export function Seat({
 }) {
   const puck = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
-  const color = colorFor(entry.participantId);
+  const color = colorFor(entry.participantId, theme.scene.palette);
+  const wire = theme.scene.style === 'wire';
+  const wireBox = useMemo(() => new THREE.EdgesGeometry(new THREE.BoxGeometry(0.62, 0.44, 0.62)), []);
   const clickable = canModerate && !entry.isHost && !isMe;
 
   useFrame((_, dt) => {
@@ -63,7 +65,17 @@ export function Seat({
           onToggleMenu(menuOpen ? null : entry.participantId);
         }}
       >
-        {theme.scene.puck === 'block' ? (
+        {wire ? (
+          <>
+            <mesh position={[0, 0.22, 0]}>
+              <boxGeometry args={[0.6, 0.42, 0.6]} />
+              <meshBasicMaterial color="#000000" />
+            </mesh>
+            <lineSegments geometry={wireBox} position={[0, 0.22, 0]}>
+              <lineBasicMaterial color={color} />
+            </lineSegments>
+          </>
+        ) : theme.scene.puck === 'block' ? (
           <>
             <mesh castShadow position={[0, 0.22, 0]}>
               <boxGeometry args={[0.62, 0.44, 0.62]} />
@@ -97,8 +109,8 @@ export function Seat({
             style={{
               fontFamily: 'var(--font-display)',
               fontWeight: 700,
-              fontSize: theme.scene.puck === 'block' ? 11 : 15,
-              color: '#1d1b17',
+              fontSize: wire ? 20 : theme.scene.puck === 'block' ? 11 : 15,
+              color: wire ? color : '#1d1b17',
               pointerEvents: 'none',
               userSelect: 'none',
             }}

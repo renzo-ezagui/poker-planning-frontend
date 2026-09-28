@@ -99,6 +99,63 @@ function Torch({ position }: { position: [number, number, number] }) {
   );
 }
 
+function WireRing({ radius, color, opacity = 1, dashed = false }: { radius: number; color: string; opacity?: number; dashed?: boolean }) {
+  const line = useMemo(() => {
+    const pts: THREE.Vector3[] = [];
+    for (let i = 0; i <= 128; i++) {
+      const a = (i / 128) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
+    }
+    const geo = new THREE.BufferGeometry().setFromPoints(pts);
+    const mat = dashed
+      ? new THREE.LineDashedMaterial({ color, dashSize: 0.18, gapSize: 0.12, transparent: true, opacity })
+      : new THREE.LineBasicMaterial({ color, transparent: true, opacity });
+    const l = new THREE.Line(geo, mat);
+    if (dashed) l.computeLineDistances();
+    return l;
+  }, [radius, color, opacity, dashed]);
+  return <primitive object={line} />;
+}
+
+/** Vector-display table: concentric rings, a rim and a receding floor grid. */
+function WireTable({ portrait, theme }: { portrait: boolean; theme: Theme }) {
+  const sc = theme.scene;
+  return (
+    <>
+      <gridHelper args={[40, 40, '#1d3b3b', '#122626']} position={[0, -0.9, 0]} />
+      <group scale={portrait ? [1, 1, TABLE_SCALE_X] : [TABLE_SCALE_X, 1, 1]}>
+        {/* occluding black top so the floor grid doesn't show through the table */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+          <circleGeometry args={[3.3, 64]} />
+          <meshBasicMaterial color="#000000" />
+        </mesh>
+        <WireRing radius={3.3} color={sc.rail} />
+        <WireRing radius={3.05} color={sc.rail} opacity={0.6} />
+        <group position={[0, -0.45, 0]}>
+          <WireRing radius={3.1} color={sc.rail} opacity={0.35} />
+        </group>
+        <WireRing radius={1.95} color={sc.line} opacity={0.7} dashed />
+      </group>
+    </>
+  );
+}
+
+function WireCore({ color }: { color: string }) {
+  const ref = useRef<THREE.LineSegments>(null);
+  const geo = useMemo(() => new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.28, 0)), []);
+  useFrame(({ clock }) => {
+    if (!ref.current) return;
+    const t = clock.getElapsedTime();
+    ref.current.rotation.set(t * 0.4, t * 0.6, 0);
+    ref.current.position.set(0, 0.34 + Math.sin(t * 1.3) * 0.05, 0.25);
+  });
+  return (
+    <lineSegments ref={ref} geometry={geo}>
+      <lineBasicMaterial color={color} />
+    </lineSegments>
+  );
+}
+
 function ChipStack({ position, colors }: { position: [number, number, number]; colors: string[] }) {
   return (
     <group position={position}>
@@ -176,7 +233,7 @@ export function TableScene({
   const [lowPower] = useState(isLowPower);
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const portrait = usePortrait();
-  const [, setFontsReady] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
 
   useEffect(() => {
     whenFontsReady().then(() => setFontsReady(true));
@@ -196,6 +253,9 @@ export function TableScene({
   }, [participants, meId, portrait]);
 
   const voteById = useMemo(() => new Map(votes.map((v) => [v.participantId, v.value])), [votes]);
+
+  // card textures are drawn once and cached, so wait for the display fonts
+  if (!fontsReady) return null;
 
   return (
     <Canvas
@@ -229,8 +289,15 @@ export function TableScene({
         </>
       )}
       <CameraRig focus={revealed} portrait={portrait} />
-      <Table shadows={!lowPower} portrait={portrait} theme={theme} />
-      {theme.scene.decor === 'gems' ? (
+      {theme.scene.style === 'wire' ? (
+        <>
+          <WireTable portrait={portrait} theme={theme} />
+          <WireCore color={theme.scene.line} />
+        </>
+      ) : (
+        <Table shadows={!lowPower} portrait={portrait} theme={theme} />
+      )}
+      {theme.scene.style === 'wire' ? null : theme.scene.decor === 'gems' ? (
         <>
           <Gem position={[-0.42, 0.34, 0.05]} color="#5fd0c8" speed={0.9} />
           <Gem position={[0.42, 0.38, 0]} color="#e0503c" speed={1.1} />

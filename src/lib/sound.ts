@@ -1,9 +1,9 @@
 // Tiny synthesized sound effects — no audio assets to ship or license.
 let ctx: AudioContext | null = null;
 let enabled = readPref();
-let style: 'soft' | 'chiptune' = 'soft';
+let style: 'soft' | 'chiptune' | 'pcspeaker' = 'soft';
 
-export function setSoundStyle(next: 'soft' | 'chiptune') {
+export function setSoundStyle(next: 'soft' | 'chiptune' | 'pcspeaker') {
   style = next;
 }
 
@@ -58,6 +58,11 @@ export function playFlip(delay = 0) {
     blip(ac, 330, ac.currentTime + delay, 0.07, 0.06, 990);
     return;
   }
+  if (style === 'pcspeaker') {
+    // PC speaker tick: one flat square beep, no sweep
+    blip(ac, 1200, ac.currentTime + delay, 0.025, 0.04);
+    return;
+  }
   const t = ac.currentTime + delay;
   const len = Math.floor(ac.sampleRate * 0.14);
   const buffer = ac.createBuffer(1, len, ac.sampleRate);
@@ -80,6 +85,11 @@ export function playFlip(delay = 0) {
 export function playChip(delay = 0) {
   const ac = audio();
   if (!ac) return;
+  if (style === 'pcspeaker') {
+    blip(ac, 880, ac.currentTime + delay, 0.08, 0.05);
+    blip(ac, 1760, ac.currentTime + delay + 0.1, 0.12, 0.05);
+    return;
+  }
   if (style === 'chiptune') {
     // rising major arpeggio: C6 E6 G6 C7
     [1046.5, 1318.5, 1568, 2093].forEach((f, i) => blip(ac, f, ac.currentTime + delay + i * 0.06, 0.055, 0.05));
@@ -104,6 +114,10 @@ export function playChip(delay = 0) {
 export function playChime() {
   const ac = audio();
   if (!ac) return;
+  if (style === 'pcspeaker') {
+    [0, 0.18, 0.36].forEach((t) => blip(ac, 1000, ac.currentTime + t, 0.1, 0.05));
+    return;
+  }
   if (style === 'chiptune') {
     [523.25, 659.25, 783.99, 659.25, 1046.5].forEach((f, i) => blip(ac, f, ac.currentTime + i * 0.11, i === 4 ? 0.3 : 0.09, 0.06));
     return;

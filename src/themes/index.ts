@@ -1,15 +1,19 @@
 import { createContext, useContext } from 'react';
 
-export type ThemeId = 'cardroom' | 'dungeon';
+export type ThemeId = 'cardroom' | 'dungeon' | 'terminal';
 
 export interface Theme {
   id: ThemeId;
   name: string;
+  /** compact label for tight UI (host controls) */
+  short: string;
   tagline: string;
   /** render the 3D scene at a fraction of the screen resolution and upscale with hard pixels */
   pixelScale: number | null;
-  sound: 'soft' | 'chiptune';
+  sound: 'soft' | 'chiptune' | 'pcspeaker';
   scene: {
+    /** solid lit meshes, or vector-style glowing wireframe */
+    style: 'solid' | 'wire';
     felt: string;
     rail: string;
     body: string;
@@ -23,7 +27,11 @@ export interface Theme {
     decor: 'chips' | 'gems';
     torches: boolean;
     puck: 'round' | 'block';
+    /** per-player palette override (wire style uses the 16-colour CGA/EGA set) */
+    palette?: string[];
   };
+  /** DOS-style boot text + F-key status bar */
+  terminal?: boolean;
   copy: {
     nowEstimating: string;
     revealed: string;
@@ -40,10 +48,12 @@ export const THEMES: Record<ThemeId, Theme> = {
   cardroom: {
     id: 'cardroom',
     name: 'Card room',
+    short: 'Card room',
     tagline: 'Felt, brass and cream cards',
     pixelScale: null,
     sound: 'soft',
     scene: {
+      style: 'solid',
       felt: '#17573f',
       rail: '#4a2c1a',
       body: '#2a1a10',
@@ -72,10 +82,12 @@ export const THEMES: Record<ThemeId, Theme> = {
   dungeon: {
     id: 'dungeon',
     name: '8-bit dungeon',
+    short: '8-bit',
     tagline: 'Pixels, torches and loot',
     pixelScale: 0.45,
     sound: 'chiptune',
     scene: {
+      style: 'solid',
       felt: '#553781',
       rail: '#8d8599',
       body: '#302642',
@@ -99,6 +111,42 @@ export const THEMES: Record<ThemeId, Theme> = {
       joinTitle: 'Join the party',
       average: 'Avg power',
       mostVoted: 'Most picked',
+    },
+  },
+  terminal: {
+    id: 'terminal',
+    name: 'C:\\> Terminal',
+    short: 'DOS',
+    tagline: 'MS-DOS nights, vector table',
+    pixelScale: null,
+    sound: 'pcspeaker',
+    terminal: true,
+    scene: {
+      style: 'wire',
+      felt: '#000000',
+      rail: '#aaaaaa',
+      body: '#000000',
+      line: '#55ffff',
+      lineOpacity: 0.9,
+      segments: 64,
+      flat: false,
+      light: '#ffffff',
+      hemiSky: '#ffffff',
+      hemiGround: '#000000',
+      decor: 'chips',
+      torches: false,
+      puck: 'block',
+      palette: ['#55ffff', '#ffff55', '#55ff55', '#ff55ff', '#ff5555', '#5555ff', '#ffffff', '#aaaaaa'],
+    },
+    copy: {
+      nowEstimating: 'C:\\ESTIMATE>',
+      revealed: 'C:\\> REVEAL.BAT',
+      quiet: 'C:\\> waiting for host_',
+      consensus: 'ALL VOTES EQUAL. OK.',
+      takeSeat: 'RUN PLANNING.EXE',
+      joinTitle: 'C:\\> JOIN TABLE',
+      average: 'AVG',
+      mostVoted: 'MODE',
     },
   },
 };
